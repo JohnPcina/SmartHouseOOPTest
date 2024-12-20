@@ -1,0 +1,205 @@
+#include <iostream>
+#include <vector>
+
+class Observer {
+public:
+    virtual void update(float temperature) = 0;
+};
+
+class TempStationCheck {
+private:
+    float temperature;
+    std::vector<Observer*> observers;
+
+public:
+    void registerObserver(Observer* observer) {
+        observers.push_back(observer);
+    }
+
+    void notifyObservers() {
+        for (Observer* observer : observers) {
+            observer->update(temperature);
+        }
+    }
+
+    void setMeasurements(float temp) {
+        temperature = temp;
+        notifyObservers();
+    }
+};
+
+class Display : public Observer {
+public:
+    void update(float temperature) {
+        std::cout << "Display: Temperature = " << temperature << std::endl;
+    }
+};
+
+// Receiver: Electronic Device
+class ElectronicDevice { //On Off method
+private:
+    std::string name;
+
+public:
+    ElectronicDevice(const std::string & n) //el device name
+        : name(n)
+    {
+    }
+
+    void turnOn() //on button for elcetronic device
+    {
+        std::cout << name << " теперь Включено " << std::endl;
+    }
+
+    void turnOff() //off button for electronic device
+    {
+        std::cout << name << " теперь Выключено" << std::endl;
+    }
+};
+
+// Command interface
+class Command { //command pattern
+public:
+    virtual void execute() = 0;
+};
+
+// Concrete Command: Turn on
+class TurnOnCommand : public Command {
+private:
+    ElectronicDevice& device;
+
+public:
+    TurnOnCommand(ElectronicDevice& dev)
+        : device(dev)
+    {
+    }
+
+    void execute() { device.turnOn(); }
+};
+
+// Concrete Command: Turn off
+class TurnOffCommand : public Command {
+private:
+    ElectronicDevice& device;
+
+public:
+    TurnOffCommand(ElectronicDevice&dev)
+        : device(dev)
+    {
+    }
+
+    void execute() { device.turnOff(); }
+};
+
+// Invoker: Remote Control
+class RemoteControl {
+private:
+    std::vector <Command*> commands;
+
+public:
+    void addCommand(Command* cmd)
+    {
+        commands.push_back(cmd);
+    }
+
+    void pressButton(int slot)
+    {
+        if (slot >= 0 && slot < commands.size()) {
+            commands[slot]->execute();
+        }
+    }
+};
+
+int main()
+{
+    // Create electronic devices
+    ElectronicDevice socket("Розетка");
+    ElectronicDevice lights("Освещение");
+
+    // Create commands for turning devices on and off
+    TurnOnCommand turnOnSocket(socket);
+    TurnOffCommand turnOffSocket(socket);
+    TurnOnCommand turnOnLights(lights);
+    TurnOffCommand turnOffLights(lights);
+
+    // Create a remote control
+    RemoteControl remote;
+
+    // Set commands for remote buttons
+    remote.addCommand(&turnOnSocket); // 0
+    remote.addCommand(&turnOnSocket); // 1
+    remote.addCommand(&turnOffSocket); // 2
+    remote.addCommand(&turnOffLights); // 3
+    remote.addCommand(&turnOnLights); // 4
+    
+    TempStationCheck TempStationCheck;    
+    Display display1;
+    TempStationCheck.registerObserver(&display1);
+    
+    
+    int InterfaceTimer = 0;
+	int OptionTimer = 1;
+	while (InterfaceTimer == 0){
+		std::cout<<"Выберите устройства для отслеживания его состояния: \n";
+		std::cout<<"1. Управление розетками в доме\n";
+		std::cout<<"2. Управление освещением в доме\n";
+		std::cout<<"3. Отслеживание показателей термостата\n";
+		std::cout<<"Ввод: ";
+		std::cin>>InterfaceTimer;
+		
+		if (InterfaceTimer == 1){
+			int switchbutton;
+			std::cout<<"\n\nВключен режим тестирования переключения розеток, введите 0 для выхода \n\n";
+			while (OptionTimer != 0){
+				std::cout<<"\n\n Для включения розетки введите '2', для выключения '1'\n";
+				std::cout<<"Ввод: ";
+				std::cin>>switchbutton;
+				if (switchbutton > 2 || switchbutton < 1){
+					std::cout << "Error?";
+				} else remote.pressButton(switchbutton);
+				if (switchbutton == 0){
+					OptionTimer = 0;
+					InterfaceTimer = 0;
+				}
+				
+			}
+		}
+		
+		if (InterfaceTimer == 2){
+			int switchbutton;
+			std::cout<<"\n\nВключен режим тестирования переключения розеток, введите 0 для выхода \n\n";
+			while (OptionTimer != 0){
+				std::cout<<"\n\n Для включения розетки введите '4', для выключения '3'\n";
+				std::cout<<"Ввод: ";
+				std::cin>>switchbutton;
+				if (switchbutton > 4 || switchbutton < 3){
+					std::cout << "Error?";
+				} else remote.pressButton(switchbutton);
+				if (switchbutton == 0){
+					OptionTimer = 0;
+					InterfaceTimer = 0;
+				}
+				
+			}
+		}
+		
+		if (InterfaceTimer == 3){
+			float switchbutton;
+			std::cout<<"\n\nВключен режим тестирования измерения температур, введите 0 для выхода \n\n";
+			while (OptionTimer != 0){
+				std::cout<<"\n\n Введите значение температуры для отслеживания: \n";
+				std::cout<<"Ввод: ";
+				std::cin>>switchbutton;
+				if (switchbutton == 0){
+					OptionTimer = 0;
+					InterfaceTimer = 0;
+				}  else TempStationCheck.setMeasurements(switchbutton);;
+				
+			}
+		}
+		
+	}
+   
+
+    return 0;
+}
